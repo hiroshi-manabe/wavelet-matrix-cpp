@@ -198,57 +198,6 @@ void TestBaseline(QuerySet& qs){
   }
   double freq_range_time = gettimeofday_sec() - begin_time;
 
-  // list_max_range num = 1
-  begin_time = gettimeofday_sec();
-  for (int i = 0; i < iter_num; ++i){
-    RandomQuery& rq = qs.range_queries[i];
-    RandomQuery& arq = qs.range_alpha_queries[i];
-    vector<pair<uint64_t, uint64_t> > res;
-    SortUniqCount(array, arq.beg, arq.end,
-		  rq.beg, rq.end, res);
-    dummy += res.back().second;
-  }
-  double list_max_range_one_time = gettimeofday_sec() - begin_time;
-
-  // list_max_range num = 10
-  begin_time = gettimeofday_sec();
-  for (int i = 0; i < iter_num; ++i){
-    RandomQuery& rq = qs.range_queries[i];
-    RandomQuery& arq = qs.range_alpha_queries[i];
-    vector<pair<uint64_t, uint64_t> > res;
-    SortUniqCount(array, arq.beg, arq.end,
-		  rq.beg, rq.end, res);
-    dummy += res.back().second;
-  }
-  double list_max_range_ten_time = gettimeofday_sec() - begin_time;
-
-  // list_mode_range num = 1
-  begin_time = gettimeofday_sec();
-  for (int i = 0; i < iter_num; ++i){
-    RandomQuery& rq = qs.range_queries[i];
-    RandomQuery& arq = qs.range_alpha_queries[i];
-    vector<pair<uint64_t, uint64_t> > res;
-    SortUniqCount(array, arq.beg, arq.end,
-		  rq.beg, rq.end, res);
-    partial_sort(res.rbegin(), res.rbegin() + 1, res.rend());
-    dummy += res.front().second;
-  }
-  double list_mode_range_one_time = gettimeofday_sec() - begin_time;
-
-  // list_mode_range num = 10
-  begin_time = gettimeofday_sec();
-  for (int i = 0; i < iter_num; ++i){
-    RandomQuery& rq = qs.range_queries[i];
-    RandomQuery& arq = qs.range_alpha_queries[i];
-    vector<pair<uint64_t, uint64_t> > res;
-    SortUniqCount(array, arq.beg, arq.end,
-		  rq.beg, rq.end, res);
-    uint64_t num = (10 < res.size()) ? 10 : res.size();
-    partial_sort(res.rbegin(), res.rbegin() + num, res.rend());
-    dummy += res.front().second;
-  }
-  double list_mode_range_ten_time = gettimeofday_sec() - begin_time;
-
   double ratio_micro = 1.0 / qs.iter_num * 1000000.0;
   cerr  << scientific<< qs.length   << "\t"
         << scientific<< qs.alphabet_num  << "\t"
@@ -258,11 +207,7 @@ void TestBaseline(QuerySet& qs){
         << scientific<< select_time  * ratio_micro << "\t"
         << scientific<< max_range_time  * ratio_micro << "\t"
         << scientific<< quantile_range_time  * ratio_micro << "\t" 
-        << scientific<< freq_range_time  * ratio_micro << "\t"
-        << scientific<< list_max_range_one_time  * ratio_micro << "\t"
-        << scientific<< list_max_range_ten_time  * ratio_micro << "\t"
-        << scientific<< list_mode_range_one_time  * ratio_micro << "\t"
-        << scientific<< list_mode_range_ten_time * ratio_micro << endl;
+        << scientific<< freq_range_time  * ratio_micro << endl;
 
   if (dummy == 7777) {
     cerr << ""; // remove optimization
@@ -399,11 +344,7 @@ int main(int argc, char* argv[]){
         << "select"  << "\t"
         << "max_range"  << "\t"
         << "quan_range"  << "\t" 
-        << "freq_range"  << "\t"
-        << "list_max_one"  << "\t"
-        << "list_max_ten"  << "\t"
-        << "list_mode_one"  << "\t"
-        << "list_mode_ten" << endl;
+        << "freq_range"  << endl;
 
   for (uint64_t length = 1000; length <= 100000000; length *= 10){
     for (uint64_t alphabet_num = 10; alphabet_num <= length ; alphabet_num *= 100){
