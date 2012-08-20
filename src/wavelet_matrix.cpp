@@ -98,7 +98,7 @@ void WaveletMatrix::RankAll(uint64_t c, uint64_t begin_pos, uint64_t end_pos,
 			    uint64_t& rank,
 			    uint64_t& rank_less_than,
 			    uint64_t& rank_more_than) const {
-  if (c >= alphabet_num_ || begin_pos >= length_ || end_pos >= length_) {
+  if (c >= alphabet_num_ || begin_pos >= length_ || end_pos > length_) {
     rank_less_than = NOTFOUND;
     rank_more_than = NOTFOUND;
     rank           = NOTFOUND;
