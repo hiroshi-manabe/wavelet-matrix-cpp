@@ -182,7 +182,7 @@ uint64_t WaveletMatrix::SelectFromPos(uint64_t c,
   } else {
     index = pos;
     for (uint64_t i = 0; i < alphabet_bit_num_; ++i) {
-      unsigned int bit = (c & (1 << (alphabet_bit_num_ - i - 1))) ? 1 : 0;
+      unsigned int bit = (c >> (alphabet_bit_num_ - i - 1)) & 1;
       index = bit_arrays_[i].Rank(bit, index);
       if (bit) {
 	index += zero_counts_[i];
@@ -193,7 +193,7 @@ uint64_t WaveletMatrix::SelectFromPos(uint64_t c,
   index += rank;
 
   for (int i = alphabet_bit_num_ - 1; i >= 0; --i) {
-    unsigned int bit = (c & (1 << (alphabet_bit_num_ - i - 1))) ? 1 : 0;
+    unsigned int bit = (c >> (alphabet_bit_num_ - i - 1)) & 1;
     if (bit) {
       index -= zero_counts_[i];
     }
@@ -357,7 +357,7 @@ void WaveletMatrix::SetArray(const vector<uint64_t>& array) {
     node_begin_pos_[i].resize((1 << (i+1)) + 1);
 
     for (uint64_t j = 0; j < length_; ++j) {
-      int bit = (array[j] & (1 << alphabet_bit_num_ - i - 1)) ? 1 : 0;
+      int bit = (array[j] >> (alphabet_bit_num_ - i - 1)) & 1;
       uint64_t subscript = get_reversed_first_bits(array[j],
 						   alphabet_bit_num_,
 						   i, bit_reverse_table_);
