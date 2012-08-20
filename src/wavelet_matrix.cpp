@@ -119,7 +119,7 @@ void WaveletMatrix::RankAll(uint64_t c, uint64_t begin_pos, uint64_t end_pos,
 
   for (size_t i = 0; i < alphabet_bit_num_; ++i) {
     const wat_array::BitArray& ba = bit_arrays_[i];
-    unsigned int bit = (c & (1 << (alphabet_bit_num_ - i - 1))) ? 1 : 0;
+    unsigned int bit = (c >> (alphabet_bit_num_ - i - 1)) & 1;
     uint64_t range_bits = end_pos - begin_pos;
     uint64_t begin_zero, end_zero;
 
