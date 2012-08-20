@@ -225,7 +225,6 @@ void WaveletMatrix::QuantileRange(uint64_t begin_pos, uint64_t end_pos,
     return;
   }
    
-  uint64_t orig_begin_pos = begin_pos;
   val = 0;
 
   uint64_t node_num = 0;
