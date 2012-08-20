@@ -1,0 +1,9 @@
+def build(bld):
+  bld(features     = 'cxx cprogram gtest',
+      source       = 'wat_array_test.cpp',
+      target       = 'wat_array_test',
+      uselib_local = 'wat_array')
+  bld(features     = 'cxx cprogram gtest',
+      source       = 'bit_array_test.cpp',
+      target       = 'bit_array_test',
+      uselib_local = 'wat_array')

@@ -1,0 +1,6 @@
+def build(bld):
+  bld(features     = 'cxx cprogram',
+      source       = 'performance_test.cpp',
+      target       = 'wavelet_matrix_performance_test',
+      includes     = '.',
+      uselib_local = 'wavelet_matrix')

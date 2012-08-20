@@ -1,0 +1,13 @@
+def build(bld):
+  bld(features     = 'cxx cshlib',
+      source       = 'wavelet_matrix.cpp bit_array.cpp',
+      name         = 'wavelet_matrix',
+      target       = 'wavelet_matrix',
+      includes     = '.')
+  bld(features     = 'cxx cstaticlib',
+      source       = 'wavelet_matrix.cpp bit_array.cpp',
+      name         = 'wavelet_matrix',
+      target       = 'wavelet_matrix',
+      includes     = '.')
+  
+  bld.install_files('${PREFIX}/include/wavelet_matrix', bld.path.ant_glob('*.hpp'))
