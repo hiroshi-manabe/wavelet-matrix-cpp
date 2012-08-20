@@ -291,8 +291,6 @@ void TestWaveletMatrix(QuerySet& qs){
 }
 
 int main(int argc, char* argv[]){
-  Test();
-
   cerr << "Performance Test init=total_time(sec.) other=avg_time(micro sec.) " << endl;
   cerr  << "method"  << "\t"
 	<< "length"  << "\t"
