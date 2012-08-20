@@ -71,11 +71,22 @@ uint64_t WaveletMatrix::Lookup(uint64_t pos) const {
 }
 
 uint64_t WaveletMatrix::Rank(uint64_t c, uint64_t pos) const {
-  uint64_t rank_less_than = 0;
-  uint64_t rank_more_than = 0;
-  uint64_t rank           = 0;
-  RankAll(c, 0, pos, rank, rank_less_than, rank_more_than);
-  return rank;
+  if (c >= alphabet_num_ || pos > length_) {
+    return NOTFOUND;
+  }
+  uint64_t begin_pos = node_begin_pos_[alphabet_bit_num_ - 1]
+    [bit_reverse_table_[c]];
+  uint64_t end_pos = pos;
+  
+  for (size_t i = 0; i < alphabet_bit_num_; ++i) {
+    const wat_array::BitArray& ba = bit_arrays_[i];
+    unsigned int bit = (c >> (alphabet_bit_num_ - i - 1)) & 1;
+    end_pos = ba.Rank(bit, end_pos);
+    if (bit) {
+      end_pos += zero_counts_[i];
+    }
+  }
+  return end_pos - begin_pos;
 }
 
 uint64_t WaveletMatrix::RankLessThan(uint64_t c, uint64_t pos) const {
