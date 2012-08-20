@@ -290,47 +290,6 @@ void TestWaveletMatrix(QuerySet& qs){
   if (dummy == 7777) cerr << "";
 }
 
-void Test() {
-  int alphabet_num = 16;
-  vector<uint64_t> array;
-  vector<uint64_t> freq(alphabet_num);
-
-  int data[] = {
-    11,  0, 15,  6,  5,  2,  7, 12,
-    11,  0, 12, 12, 13,  4,  6, 13,
-     1, 11,  6,  1,  7, 10,  2,  7,
-    14, 11,  1,  7,  5,  4, 14,  6};
-  size_t len = 32;
-
-  for (uint64_t i = 0; i < len; ++i){
-    array.push_back(data[i]);
-  }
-
-  wavelet_matrix::WaveletMatrix wa;
-  wa.Init(array);
-
-  int n;
-  n = wa.Lookup(24);
-  cerr << n << " " <<  14 << endl;
-  n = wa.Rank(7, 24);
-  cerr << n << " " <<  3 << endl;
-  n = wa.RankLessThan(8, 8);
-  cerr << n << " " << 5 << endl;
-  uint64_t rank, more, less;
-  wa.RankAll(8, 6, 20, rank, less, more);
-  cerr << less << " " <<  7 << endl;
-  cerr << more << " " << 7 << endl;
-  cerr << rank << " " << 0 << endl;
-  n = wa.Select(7, 3);
-  cerr << n << " " << 24 << endl;
-  n = wa.SelectFromPos(7, 8, 3);
-  cerr << n << " " << 28 << endl;
-  uint64_t pos, val;
-  wa.QuantileRange(5, 25, 13, pos, val);
-  cerr << val << " " << 11 << endl;
-  cerr << pos << " " << 17 << endl;
-}
-
 int main(int argc, char* argv[]){
   Test();
 
