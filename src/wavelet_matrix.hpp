@@ -62,7 +62,7 @@ public:
    * Initialize an index from an array
    * @param An array to be initialized
    */
-  void Init(const std::vector<uint64_t>& array, bool create_cache);
+  void Init(const std::vector<uint64_t>& array);
 
   /**
    * Clear and release the resouces
@@ -219,7 +219,7 @@ public:
 private:
   uint64_t GetAlphabetNum(const std::vector<uint64_t>& array) const;
   uint64_t Log2(uint64_t x) const;
-  void SetArray(const std::vector<uint64_t>& array, bool create_cache);
+  void SetArray(const std::vector<uint64_t>& array);
 
   std::vector<wat_array::BitArray> bit_arrays_;
   std::vector<std::vector<uint64_t> > node_begin_pos_;
@@ -229,7 +229,6 @@ private:
   uint64_t alphabet_num_;
   uint64_t alphabet_bit_num_;
   uint64_t length_;
-  bool has_cache_;
 };
 
 

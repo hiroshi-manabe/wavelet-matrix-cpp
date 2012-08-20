@@ -275,7 +275,7 @@ void TestWaveletMatrix(QuerySet& qs){
   double begin_time = 0.0;
 
   begin_time = gettimeofday_sec();
-  ws.Init(qs.array, true);
+  ws.Init(qs.array);
   double init_time = gettimeofday_sec() - begin_time;
   
 
@@ -362,7 +362,7 @@ void Test() {
   }
 
   wavelet_matrix::WaveletMatrix wa;
-  wa.Init(array, false);
+  wa.Init(array);
 
   int n;
   n = wa.Lookup(24);
