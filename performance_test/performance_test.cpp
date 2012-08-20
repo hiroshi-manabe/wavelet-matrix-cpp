@@ -306,7 +306,7 @@ int main(int argc, char* argv[]){
   for (uint64_t length = 1000; length <= 100000000; length *= 10){
     for (uint64_t alphabet_num = 10; alphabet_num <= length ; alphabet_num *= 100){
       QuerySet qs(100, length, alphabet_num);
-      cerr << "ws "; TestWaveletMatrix(qs);
+      cerr << "wm "; TestWaveletMatrix(qs);
     }
   }
 
