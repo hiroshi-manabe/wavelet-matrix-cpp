@@ -328,14 +328,8 @@ inline uint64_t get_reversed_first_bits(uint64_t num,
 				  (1 << (max_bits - bit_num)))];
 }
 
-void WaveletMatrix::SetArray(const vector<uint64_t>& array) {
-  if (alphabet_num_ == 0) return;
-  bit_arrays_.resize(alphabet_bit_num_, length_);
-  zero_counts_.resize(alphabet_bit_num_, length_);
-  uint64_t max_value = 1 << alphabet_bit_num_;
-
-  node_begin_pos_.resize(alphabet_bit_num_);
-  bit_reverse_table_.resize(max_value);
+void WaveletMatrix::SetBitReverseTable() {
+  bit_reverse_table_.resize(1 << alphabet_bit_num_);
   bit_reverse_table_[0] = 0;
   for (uint64_t i = 0; i < alphabet_bit_num_; ++i) {
     uint64_t n = (1 << i);
@@ -344,6 +338,15 @@ void WaveletMatrix::SetArray(const vector<uint64_t>& array) {
       bit_reverse_table_[n + j] = bit_reverse_table_[j] + m;
     }
   }
+}
+
+void WaveletMatrix::SetArray(const vector<uint64_t>& array) {
+  if (alphabet_num_ == 0) return;
+  bit_arrays_.resize(alphabet_bit_num_, length_);
+  zero_counts_.resize(alphabet_bit_num_, length_);
+
+  node_begin_pos_.resize(alphabet_bit_num_);
+  SetBitReverseTable();
 
   std::vector<uint64_t> dummy;
   dummy.push_back(0);
@@ -382,6 +385,12 @@ void WaveletMatrix::Save(ostream& os) const {
   for (size_t i = 0; i < bit_arrays_.size(); ++i) {
     bit_arrays_[i].Save(os);
   }
+  for (size_t i = 0; i < bit_arrays_.size(); ++i) {
+    for (size_t j = 0; j < (size_t)(1 << (i+1)) + 1; ++j) {
+      os.write((const char*)(&node_begin_pos_[i][j]),
+	       sizeof(node_begin_pos_[i][j]));
+    }
+  }
 }
 
 void WaveletMatrix::Load(istream& is) {
@@ -395,6 +404,20 @@ void WaveletMatrix::Load(istream& is) {
     bit_arrays_[i].Load(is);
     bit_arrays_[i].Build();
   }
+
+  node_begin_pos_.resize(bit_arrays_.size());
+  for (size_t i = 0; i < bit_arrays_.size(); ++i) {
+    node_begin_pos_[i].resize((1 << (i+1)) + 1);
+    for (size_t j = 0; j < (size_t)(1 << (i+1)) + 1; ++j) {
+      is.read((char*)(&node_begin_pos_[i][j]),
+	      sizeof(node_begin_pos_[i][j]));
+    }
+  }
+  zero_counts_.resize(bit_arrays_.size());
+  for (size_t i = 0; i < bit_arrays_.size(); ++i) {
+    zero_counts_[i] = node_begin_pos_[i][1 << i];
+  }
+  SetBitReverseTable();
 }
 
 }
