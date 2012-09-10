@@ -334,7 +334,7 @@ void WaveletMatrix::SetBitReverseTable() {
   for (uint64_t i = 0; i < alphabet_bit_num_; ++i) {
     uint64_t n = (1 << i);
     uint64_t m = (1 << (alphabet_bit_num_ - i - 1));
-    for (uint64_t j = 0; j < ((uint64_t)1 << i); ++j) {
+    for (uint64_t j = 0; j < n; ++j) {
       bit_reverse_table_[n + j] = bit_reverse_table_[j] + m;
     }
   }
