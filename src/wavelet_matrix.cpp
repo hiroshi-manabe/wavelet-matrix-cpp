@@ -44,7 +44,7 @@ inline uint64_t get_reversed_first_bits(uint64_t n,
     n = (n & 0x0f0f0f0f0f0f0f0fLLU) << 4  | (n & 0xf0f0f0f0f0f0f0f0LLU) >>  4;
     n = (n & 0x00ff00ff00ff00ffLLU) << 8  | (n & 0xff00ff00ff00ff00LLU) >>  8;
     n = (n & 0x0000ffff0000ffffLLU) << 16 | (n & 0xffff0000ffff0000LLU) >> 16;
-    n = (n & 0x00000000ffffffffLLU) << 32 | (n & 0xffff0000ffff0000LLU) >> 32;;
+    n = (n & 0x00000000ffffffffLLU) << 32 | (n & 0xffffffff00000000LLU) >> 32;
     return (n >> (64 - max_bits)) & ((1 << bit_num) - 1);
   }
 }
