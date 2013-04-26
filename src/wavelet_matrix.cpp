@@ -27,6 +27,29 @@
 
 using namespace std;
 
+namespace {
+
+inline uint64_t get_reversed_first_bits(uint64_t n,
+					uint64_t max_bits,
+					uint64_t bit_num,
+					const vector<uint64_t>&
+					bit_reverse_table) {
+  if (bit_reverse_table.size()) {
+    return bit_reverse_table[n & ((1 << max_bits) -
+				  (1 << (max_bits - bit_num)))];
+  } else {
+    n = (n & 0x5555555555555555LLU) << 1  | (n & 0xaaaaaaaaaaaaaaaaLLU) >>  1;
+    n = (n & 0x3333333333333333LLU) << 2  | (n & 0xccccccccccccccccLLU) >>  2;
+    n = (n & 0x0f0f0f0f0f0f0f0fLLU) << 4  | (n & 0xf0f0f0f0f0f0f0f0LLU) >>  4;
+    n = (n & 0x00ff00ff00ff00ffLLU) << 8  | (n & 0xff00ff00ff00ff00LLU) >>  8;
+    n = (n & 0x0000ffff0000ffffLLU) << 16 | (n & 0xffff0000ffff0000LLU) >> 16;
+    n = (n & 0x00000000ffffffffLLU) << 32 | (n & 0xffff0000ffff0000LLU) >> 32;;
+    return (n >> (64 - max_bits)) & ((1 << bit_num) - 1);
+  }
+}
+
+}  // namespace
+
 namespace wavelet_matrix {
 
 WaveletMatrix::WaveletMatrix() : alphabet_num_(0), alphabet_bit_num_(0), length_(0) {
@@ -75,7 +98,8 @@ uint64_t WaveletMatrix::Rank(uint64_t c, uint64_t pos) const {
     return NOTFOUND;
   }
   uint64_t begin_pos = node_begin_pos_[alphabet_bit_num_ - 1]
-    [bit_reverse_table_[c]];
+    [get_reversed_first_bits(c, alphabet_bit_num_, alphabet_bit_num_,
+			     bit_reverse_table_)];
   uint64_t end_pos = pos;
   
   for (size_t i = 0; i < alphabet_bit_num_; ++i) {
@@ -178,7 +202,9 @@ uint64_t WaveletMatrix::SelectFromPos(uint64_t c,
 
   uint64_t index;
   if (pos == 0) {
-    index = node_begin_pos_[alphabet_bit_num_ - 1][bit_reverse_table_[c]];
+    index = node_begin_pos_[alphabet_bit_num_ - 1]
+      [get_reversed_first_bits(c, alphabet_bit_num_, alphabet_bit_num_,
+			       bit_reverse_table_)];
   } else {
     index = pos;
     for (uint64_t i = 0; i < alphabet_bit_num_; ++i) {
@@ -276,7 +302,9 @@ void WaveletMatrix::QuantileRange(uint64_t begin_pos, uint64_t end_pos,
 
   pos = Select(val, begin_pos + k -
 	       node_begin_pos_[alphabet_bit_num_ - 1]
-	       [bit_reverse_table_[val]] + 1) - 1;
+	       [get_reversed_first_bits(val, alphabet_bit_num_,
+					alphabet_bit_num_,bit_reverse_table_)]
+	       + 1) - 1;
 }
 
 uint64_t WaveletMatrix::Freq(uint64_t c) const {
@@ -319,16 +347,10 @@ uint64_t WaveletMatrix::Log2(uint64_t x) const {
   return bit_num;
 }
 
-inline uint64_t get_reversed_first_bits(uint64_t num,
-					uint64_t max_bits,
-					uint64_t bit_num,
-					const vector<uint64_t>&
-					bit_reverse_table) {
-  return bit_reverse_table[num & ((1 << max_bits) -
-				  (1 << (max_bits - bit_num)))];
-}
-
 void WaveletMatrix::SetBitReverseTable() {
+  if (alphabet_bit_num_ > BIT_REVERSE_TABLE_MAX_BITS) {
+    return;
+  }
   bit_reverse_table_.resize(1 << alphabet_bit_num_);
   bit_reverse_table_[0] = 0;
   for (uint64_t i = 0; i < alphabet_bit_num_; ++i) {

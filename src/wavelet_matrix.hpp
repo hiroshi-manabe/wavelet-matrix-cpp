@@ -43,6 +43,7 @@ namespace wavelet_matrix {
  */
 
 enum {
+  BIT_REVERSE_TABLE_MAX_BITS = 16,
   NOTFOUND = 0xFFFFFFFFFFFFFFFFLLU
 };  
 
