@@ -25,7 +25,6 @@
 #define WAVELET_MATRIX_WAVELET_MATRIX_HPP_
 
 #include <vector>
-#include <queue>
 #include <stdint.h>
 #include <iostream>
 #include <cassert>

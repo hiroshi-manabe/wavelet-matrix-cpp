@@ -21,11 +21,12 @@
  *      software without specific prior written permission.
  */
 
-#include <queue>
 #include <algorithm>
 #include "wavelet_matrix.hpp"
 
-using namespace std;
+using std::istream;
+using std::ostream;
+using std::vector;
 
 namespace {
 
