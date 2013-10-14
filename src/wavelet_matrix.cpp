@@ -360,7 +360,7 @@ void WaveletMatrix::SetArray(const vector<uint64_t>& array) {
     uint64_t sum = 0;
 
     // bit-reversed loop.
-    // ex. 0000 -> 1000 -> 0100 0> 1100 -> 0010 -> ... -> 0111 -> 1111
+    // ex. 0000 -> 1000 -> 0100 -> 1100 -> 0010 -> ... -> 0111 -> 1111
     // http://musicdsp.org/showone.php?id=171
     for (uint64_t j = 2; j < N2 + 2; j += 2) {
       uint64_t t = node_begin_pos_[i][rev];
