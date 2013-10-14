@@ -344,6 +344,9 @@ void WaveletMatrix::SetArray(const vector<uint64_t>& array) {
     uint64_t rev = N - 1;
     uint64_t prev_rev = N - 1;
 
+    // bit-reversed reverse loop.
+    // ex. 1111 -> 0111 -> 1011 -> 0011 -> 1101 -> ... -> 1000 -> 0000
+    // http://musicdsp.org/showone.php?id=171
     for (uint64_t j = N2 - 2; j >= 2; j -= 2) {
       rev ^= N - (N / (j & -j));
       (*prev_begin_pos)[prev_rev] = (*prev_begin_pos)[rev];
@@ -356,6 +359,9 @@ void WaveletMatrix::SetArray(const vector<uint64_t>& array) {
     rev = 0;
     uint64_t sum = 0;
 
+    // bit-reversed loop.
+    // ex. 0000 -> 1000 -> 0100 0> 1100 -> 0010 -> ... -> 0111 -> 1111
+    // http://musicdsp.org/showone.php?id=171
     for (uint64_t j = 2; j < N2 + 2; j += 2) {
       uint64_t t = node_begin_pos_[i][rev];
       node_begin_pos_[i][rev] = sum;
