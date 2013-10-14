@@ -65,7 +65,7 @@ uint64_t WaveletMatrix::Lookup(uint64_t pos) const {
     c |= bit;
     index = ba.Rank(bit, index);
     if (bit) {
-      index += zero_counts_[i];
+      index += node_begin_pos_[i][1];
     }
   }
   return c;
@@ -83,7 +83,7 @@ uint64_t WaveletMatrix::Rank(uint64_t c, uint64_t pos) const {
     unsigned int bit = (c >> (alphabet_bit_num_ - i - 1)) & 1;
     end_pos = ba.Rank(bit, end_pos);
     if (bit) {
-      end_pos += zero_counts_[i];
+      end_pos += node_begin_pos_[i][1];
     }
   }
   return end_pos - begin_pos;
@@ -147,8 +147,8 @@ void WaveletMatrix::RankAll(uint64_t c, uint64_t begin_pos, uint64_t end_pos,
     }
 
     if (bit) {
-      begin_pos += zero_counts_[i] - begin_zero;
-      end_pos += zero_counts_[i] - end_zero;
+      begin_pos += node_begin_pos_[i][1] - begin_zero;
+      end_pos += node_begin_pos_[i][1] - end_zero;
     } else {
       begin_pos = begin_zero;
       end_pos = end_zero;
@@ -185,7 +185,7 @@ uint64_t WaveletMatrix::SelectFromPos(uint64_t c,
       unsigned int bit = (c >> (alphabet_bit_num_ - i - 1)) & 1;
       index = bit_arrays_[i].Rank(bit, index);
       if (bit) {
-	index += zero_counts_[i];
+	index += node_begin_pos_[i][1];
       }
     }
   }
@@ -195,7 +195,7 @@ uint64_t WaveletMatrix::SelectFromPos(uint64_t c,
   for (int i = alphabet_bit_num_ - 1; i >= 0; --i) {
     unsigned int bit = (c >> (alphabet_bit_num_ - i - 1)) & 1;
     if (bit) {
-      index -= zero_counts_[i];
+      index -= node_begin_pos_[i][1];
     }
 
     index = bit_arrays_[i].Select(bit, index) + 1;
@@ -263,8 +263,8 @@ void WaveletMatrix::QuantileRange(uint64_t begin_pos, uint64_t end_pos,
 
     if (bit) {
       k -= zero_bits;
-      begin_pos += zero_counts_[i] - begin_zero;
-      end_pos += zero_counts_[i] - end_zero;
+      begin_pos += node_begin_pos_[i][1] - begin_zero;
+      end_pos += node_begin_pos_[i][1] - end_zero;
     } else {
       begin_pos = begin_zero;
       end_pos = end_zero;
@@ -321,7 +321,6 @@ uint64_t WaveletMatrix::Log2(uint64_t x) const {
 void WaveletMatrix::SetArray(const vector<uint64_t>& array) {
   if (alphabet_num_ == 0) return;
   bit_arrays_.resize(alphabet_bit_num_, length_);
-  zero_counts_.resize(alphabet_bit_num_, length_);
 
   node_begin_pos_.resize(alphabet_bit_num_);
 
@@ -346,7 +345,7 @@ void WaveletMatrix::SetArray(const vector<uint64_t>& array) {
     uint64_t prev_rev = N - 1;
 
     for (uint64_t j = N2 - 2; j >= 2; j -= 2) {
-      rev ^= N - (N / j & -j);
+      rev ^= N - (N / (j & -j));
       (*prev_begin_pos)[prev_rev] = (*prev_begin_pos)[rev];
       prev_rev = rev;
     }
@@ -361,9 +360,8 @@ void WaveletMatrix::SetArray(const vector<uint64_t>& array) {
       uint64_t t = node_begin_pos_[i][rev];
       node_begin_pos_[i][rev] = sum;
       sum += t;
-      rev ^= N - (N / j & -j);
+      rev ^= N - (N / (j & -j));
     }
-    zero_counts_[i] = node_begin_pos_[i][1];
 
     bit_arrays_[i].Build();
     prev_begin_pos = &(node_begin_pos_[i]);
@@ -403,10 +401,6 @@ void WaveletMatrix::Load(istream& is) {
       is.read((char*)(&node_begin_pos_[i][j]),
 	      sizeof(node_begin_pos_[i][j]));
     }
-  }
-  zero_counts_.resize(bit_arrays_.size());
-  for (size_t i = 0; i < bit_arrays_.size(); ++i) {
-    zero_counts_[i] = node_begin_pos_[i][1 << i];
   }
 }
 
