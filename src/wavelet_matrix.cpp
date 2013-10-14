@@ -331,7 +331,7 @@ void WaveletMatrix::SetArray(const vector<uint64_t>& array) {
   std::vector<uint64_t>* prev_begin_pos = &dummy;
 
   for (uint64_t i = 0; i < alphabet_bit_num_; ++i) {
-    node_begin_pos_[i].resize((1 << (i+1)) + 1);
+    node_begin_pos_[i].resize(1 << (i+1));
 
     for (uint64_t j = 0; j < length_; ++j) {
       int bit = (array[j] >> (alphabet_bit_num_ - i - 1)) & 1;
@@ -377,7 +377,7 @@ void WaveletMatrix::Save(ostream& os) const {
     bit_arrays_[i].Save(os);
   }
   for (size_t i = 0; i < bit_arrays_.size(); ++i) {
-    for (size_t j = 0; j < (size_t)(1 << (i+1)) + 1; ++j) {
+    for (size_t j = 0; j < (size_t)(1 << (i+1)); ++j) {
       os.write((const char*)(&node_begin_pos_[i][j]),
 	       sizeof(node_begin_pos_[i][j]));
     }
@@ -398,8 +398,8 @@ void WaveletMatrix::Load(istream& is) {
 
   node_begin_pos_.resize(bit_arrays_.size());
   for (size_t i = 0; i < bit_arrays_.size(); ++i) {
-    node_begin_pos_[i].resize((1 << (i+1)) + 1);
-    for (size_t j = 0; j < (size_t)(1 << (i+1)) + 1; ++j) {
+    node_begin_pos_[i].resize(1 << (i+1));
+    for (size_t j = 0; j < (size_t)(1 << (i+1)); ++j) {
       is.read((char*)(&node_begin_pos_[i][j]),
 	      sizeof(node_begin_pos_[i][j]));
     }
