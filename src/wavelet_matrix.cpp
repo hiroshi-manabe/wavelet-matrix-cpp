@@ -28,29 +28,6 @@ using std::istream;
 using std::ostream;
 using std::vector;
 
-namespace {
-
-inline uint64_t get_reversed_first_bits(uint64_t n,
-					uint64_t max_bits,
-					uint64_t bit_num,
-					const vector<uint64_t>&
-					bit_reverse_table) {
-  if (bit_reverse_table.size()) {
-    return bit_reverse_table[n & ((1 << max_bits) -
-				  (1 << (max_bits - bit_num)))];
-  } else {
-    n = (n & 0x5555555555555555LLU) << 1  | (n & 0xaaaaaaaaaaaaaaaaLLU) >>  1;
-    n = (n & 0x3333333333333333LLU) << 2  | (n & 0xccccccccccccccccLLU) >>  2;
-    n = (n & 0x0f0f0f0f0f0f0f0fLLU) << 4  | (n & 0xf0f0f0f0f0f0f0f0LLU) >>  4;
-    n = (n & 0x00ff00ff00ff00ffLLU) << 8  | (n & 0xff00ff00ff00ff00LLU) >>  8;
-    n = (n & 0x0000ffff0000ffffLLU) << 16 | (n & 0xffff0000ffff0000LLU) >> 16;
-    n = (n & 0x00000000ffffffffLLU) << 32 | (n & 0xffffffff00000000LLU) >> 32;
-    return (n >> (64 - max_bits)) & ((1 << bit_num) - 1);
-  }
-}
-
-}  // namespace
-
 namespace wavelet_matrix {
 
 WaveletMatrix::WaveletMatrix() : alphabet_num_(0), alphabet_bit_num_(0), length_(0) {
@@ -98,9 +75,7 @@ uint64_t WaveletMatrix::Rank(uint64_t c, uint64_t pos) const {
   if (c >= alphabet_num_ || pos > length_) {
     return NOTFOUND;
   }
-  uint64_t begin_pos = node_begin_pos_[alphabet_bit_num_ - 1]
-    [get_reversed_first_bits(c, alphabet_bit_num_, alphabet_bit_num_,
-			     bit_reverse_table_)];
+  uint64_t begin_pos = node_begin_pos_[alphabet_bit_num_ - 1][c];
   uint64_t end_pos = pos;
   
   for (size_t i = 0; i < alphabet_bit_num_; ++i) {
@@ -203,9 +178,7 @@ uint64_t WaveletMatrix::SelectFromPos(uint64_t c,
 
   uint64_t index;
   if (pos == 0) {
-    index = node_begin_pos_[alphabet_bit_num_ - 1]
-      [get_reversed_first_bits(c, alphabet_bit_num_, alphabet_bit_num_,
-			       bit_reverse_table_)];
+    index = node_begin_pos_[alphabet_bit_num_ - 1][c];
   } else {
     index = pos;
     for (uint64_t i = 0; i < alphabet_bit_num_; ++i) {
@@ -302,10 +275,7 @@ void WaveletMatrix::QuantileRange(uint64_t begin_pos, uint64_t end_pos,
   }
 
   pos = Select(val, begin_pos + k -
-	       node_begin_pos_[alphabet_bit_num_ - 1]
-	       [get_reversed_first_bits(val, alphabet_bit_num_,
-					alphabet_bit_num_,bit_reverse_table_)]
-	       + 1) - 1;
+	       node_begin_pos_[alphabet_bit_num_ - 1][val] + 1) - 1;
 }
 
 uint64_t WaveletMatrix::Freq(uint64_t c) const {
@@ -348,54 +318,52 @@ uint64_t WaveletMatrix::Log2(uint64_t x) const {
   return bit_num;
 }
 
-void WaveletMatrix::SetBitReverseTable() {
-  if (alphabet_bit_num_ > BIT_REVERSE_TABLE_MAX_BITS) {
-    return;
-  }
-  bit_reverse_table_.resize(1 << alphabet_bit_num_);
-  bit_reverse_table_[0] = 0;
-  for (uint64_t i = 0; i < alphabet_bit_num_; ++i) {
-    uint64_t n = (1 << i);
-    uint64_t m = (1 << (alphabet_bit_num_ - i - 1));
-    for (uint64_t j = 0; j < n; ++j) {
-      bit_reverse_table_[n + j] = bit_reverse_table_[j] + m;
-    }
-  }
-}
-
 void WaveletMatrix::SetArray(const vector<uint64_t>& array) {
   if (alphabet_num_ == 0) return;
   bit_arrays_.resize(alphabet_bit_num_, length_);
   zero_counts_.resize(alphabet_bit_num_, length_);
 
   node_begin_pos_.resize(alphabet_bit_num_);
-  SetBitReverseTable();
 
   std::vector<uint64_t> dummy;
   dummy.push_back(0);
   dummy.push_back(length_);
-  std::vector<uint64_t>& prev_begin_pos = dummy;
+  const std::vector<uint64_t>* prev_begin_pos = &dummy;
 
   for (uint64_t i = 0; i < alphabet_bit_num_; ++i) {
     node_begin_pos_[i].resize((1 << (i+1)) + 1);
 
     for (uint64_t j = 0; j < length_; ++j) {
       int bit = (array[j] >> (alphabet_bit_num_ - i - 1)) & 1;
-      uint64_t subscript = get_reversed_first_bits(array[j],
-						   alphabet_bit_num_,
-						   i, bit_reverse_table_);
-      bit_arrays_[i].SetBit(bit, prev_begin_pos[subscript]++);
-      ++node_begin_pos_[i][subscript + (bit << i) + 1];
+      uint64_t subscript = array[j] >> (alphabet_bit_num_ - i);
+      bit_arrays_[i].SetBit(bit, (*prev_begin_pos)[subscript]++);
+      ++node_begin_pos_[i][(subscript << 1) | bit];
     }
-    for (uint64_t j = 0; j < ((uint64_t)1 << i); ++j) {
-      prev_begin_pos[j+1] = prev_begin_pos[j];
-    }
-    prev_begin_pos[0] = 0;
 
-    for (uint64_t j = 0; j < ((uint64_t)1 << (i+1)); ++j) {
-      node_begin_pos_[i][j+1] += node_begin_pos_[i][j];
+    uint64_t N = ((uint64_1)1 << i);
+    uint64_t N2 = N << 1;
+    uint64_t rev = N - 1;
+    uint64_t prev_rev = N - 1;
+
+    for (uint64_t j = N2 - 2; j >= 2; j -= 2) {
+      rev ^= N - (N / j & -j);
+      (*prev_begin_pos)[prev_rev] = (*prev_begin_pos)[rev];
+      prev_rev = rev;
     }
-    zero_counts_[i] = node_begin_pos_[i][1 << i];
+    (*prev_begin_pos[0]) = 0;
+
+    N <<= 1;
+    N2 <<= 1;
+    rev = 0;
+    uint64_t sum = 0;
+
+    for (uint64_t j = 2; j < N2 + 2; j += 2) {
+      uint64_t t = node_begin_pos_[i][rev];
+      node_begin_pos_[i][rev] = sum;
+      sum += t;
+      rev ^= N - (N / j & -j);
+    }
+    zero_counts_[i] = node_begin_pos_[i][1];
 
     bit_arrays_[i].Build();
     prev_begin_pos = node_begin_pos_[i];
@@ -440,7 +408,6 @@ void WaveletMatrix::Load(istream& is) {
   for (size_t i = 0; i < bit_arrays_.size(); ++i) {
     zero_counts_[i] = node_begin_pos_[i][1 << i];
   }
-  SetBitReverseTable();
 }
 
 }
