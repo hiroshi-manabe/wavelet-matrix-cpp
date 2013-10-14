@@ -328,7 +328,7 @@ void WaveletMatrix::SetArray(const vector<uint64_t>& array) {
   std::vector<uint64_t> dummy;
   dummy.push_back(0);
   dummy.push_back(length_);
-  const std::vector<uint64_t>* prev_begin_pos = &dummy;
+  std::vector<uint64_t>* prev_begin_pos = &dummy;
 
   for (uint64_t i = 0; i < alphabet_bit_num_; ++i) {
     node_begin_pos_[i].resize((1 << (i+1)) + 1);
@@ -340,7 +340,7 @@ void WaveletMatrix::SetArray(const vector<uint64_t>& array) {
       ++node_begin_pos_[i][(subscript << 1) | bit];
     }
 
-    uint64_t N = ((uint64_1)1 << i);
+    uint64_t N = (uint64_t)1 << i;
     uint64_t N2 = N << 1;
     uint64_t rev = N - 1;
     uint64_t prev_rev = N - 1;
@@ -350,7 +350,7 @@ void WaveletMatrix::SetArray(const vector<uint64_t>& array) {
       (*prev_begin_pos)[prev_rev] = (*prev_begin_pos)[rev];
       prev_rev = rev;
     }
-    (*prev_begin_pos[0]) = 0;
+    (*prev_begin_pos)[0] = 0;
 
     N <<= 1;
     N2 <<= 1;
@@ -366,7 +366,7 @@ void WaveletMatrix::SetArray(const vector<uint64_t>& array) {
     zero_counts_[i] = node_begin_pos_[i][1];
 
     bit_arrays_[i].Build();
-    prev_begin_pos = node_begin_pos_[i];
+    prev_begin_pos = &(node_begin_pos_[i]);
   }
 }
 
