@@ -339,34 +339,34 @@ void WaveletMatrix::SetArray(const vector<uint64_t>& array) {
       ++node_begin_pos_[i][(subscript << 1) | bit];
     }
 
-    uint64_t N = (uint64_t)1 << i;
-    uint64_t N2 = N << 1;
-    uint64_t rev = N - 1;
-    uint64_t prev_rev = N - 1;
+    uint64_t cur_max = (uint64_t)1 << i;
+    uint64_t cur_max_half = cur_max >> 1;
+    uint64_t rev = cur_max - 1;
+    uint64_t prev_rev = cur_max - 1;
 
-    // bit-reversed reverse loop.
-    // ex. 1111 -> 0111 -> 1011 -> 0011 -> 1101 -> ... -> 1000 -> 0000
+    // bit-reversed reverse loop (skipping the first one).
+    // ex. 0111 -> 1011 -> 0011 -> 1101 -> ... -> 1000 -> 0000
     // http://musicdsp.org/showone.php?id=171
-    for (uint64_t j = N2 - 2; j >= 2; j -= 2) {
-      rev ^= N - (N / (j & -j));
+    for (uint64_t j = cur_max - 1; j > 0; --j) {
+      rev ^= cur_max - (cur_max_half / (j & -j));
       (*prev_begin_pos)[prev_rev] = (*prev_begin_pos)[rev];
       prev_rev = rev;
     }
     (*prev_begin_pos)[0] = 0;
 
-    N <<= 1;
-    N2 <<= 1;
+    cur_max_half = cur_max;
+    cur_max <<= 1;
     rev = 0;
     uint64_t sum = 0;
 
     // bit-reversed loop.
     // ex. 0000 -> 1000 -> 0100 -> 1100 -> 0010 -> ... -> 0111 -> 1111
     // http://musicdsp.org/showone.php?id=171
-    for (uint64_t j = 2; j < N2 + 2; j += 2) {
+    for (uint64_t j = 0; j < cur_max;
+	 ++j, rev ^= cur_max - (cur_max_half / (j & -j))) {
       uint64_t t = node_begin_pos_[i][rev];
       node_begin_pos_[i][rev] = sum;
       sum += t;
-      rev ^= N - (N / (j & -j));
     }
 
     bit_arrays_[i].Build();
