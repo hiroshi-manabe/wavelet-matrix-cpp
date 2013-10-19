@@ -340,7 +340,6 @@ void WaveletMatrix::SetArray(const vector<uint64_t>& array) {
     }
 
     uint64_t cur_max = (uint64_t)1 << i;
-    uint64_t cur_max_half = cur_max >> 1;
     uint64_t rev = cur_max - 1;
     uint64_t prev_rev = cur_max - 1;
 
@@ -348,13 +347,12 @@ void WaveletMatrix::SetArray(const vector<uint64_t>& array) {
     // ex. 0111 -> 1011 -> 0011 -> 1101 -> ... -> 1000 -> 0000
     // http://musicdsp.org/showone.php?id=171
     for (uint64_t j = cur_max - 1; j > 0; --j) {
-      rev ^= cur_max - (cur_max_half / (j & -j));
+      rev ^= cur_max - (cur_max / 2 / (j & -j));
       (*prev_begin_pos)[prev_rev] = (*prev_begin_pos)[rev];
       prev_rev = rev;
     }
     (*prev_begin_pos)[0] = 0;
 
-    cur_max_half = cur_max;
     cur_max <<= 1;
     rev = 0;
     uint64_t sum = 0;
@@ -363,7 +361,7 @@ void WaveletMatrix::SetArray(const vector<uint64_t>& array) {
     // ex. 0000 -> 1000 -> 0100 -> 1100 -> 0010 -> ... -> 0111 -> 1111
     // http://musicdsp.org/showone.php?id=171
     for (uint64_t j = 0; j < cur_max;
-	 ++j, rev ^= cur_max - (cur_max_half / (j & -j))) {
+	 ++j, rev ^= cur_max - (cur_max / 2 / (j & -j))) {
       uint64_t t = node_begin_pos_[i][rev];
       node_begin_pos_[i][rev] = sum;
       sum += t;
